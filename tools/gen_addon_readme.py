@@ -26,17 +26,17 @@ else:
 
 FRAGMENTS_DIR = 'readme'
 
-FRAGMENTS = (
+REQUIRED_FRAGMENTS = [
     'DESCRIPTION',
-    'INSTALL',
+]
+
+SUGGESTED_FRAGMENTS = [
     'CONFIGURE',
     'USAGE',
-    'ROADMAP',
     'DEVELOP',
     'CONTRIBUTORS',
     'CREDITS',
-    'HISTORY',
-)
+]
 
 LICENSE_BADGES = {
     'AGPL-3': (
@@ -173,9 +173,9 @@ def generate_fragment(org_name, repo_name, branch, addon_name, file):
 
 
 def gen_one_addon_readme(
-        org_name, repo_name, branch, addon_name, addon_dir, manifest):
+        org_name, repo_name, branch, addon_name, addon_dir, manifest, fragments_created):
     fragments = {}
-    for fragment_name in FRAGMENTS:
+    for fragment_name in fragments_created:
         fragment_filename = os.path.join(
             addon_dir, FRAGMENTS_DIR, fragment_name + '.rst',
         )
@@ -282,10 +282,16 @@ def gen_one_addon_index(readme_filename):
                    "generated for all installable addons found there.")
 @click.option('--commit/--no-commit',
               help="git commit changes to README.rst, if any.")
+@click.option('--minimal/--all-fragments',
+              help="Create all recomended fragments.")
+@click.option('--extra-fragments', 'extra_fragments',
+              type=str,
+              multiple=True,
+              help="Extra fragments to be included and created.")
 @click.option('--gen-html/--no-gen-html', default=True,
               help="Generate index html file.")
 def gen_addon_readme(
-        org_name, repo_name, branch, addon_dirs, addons_dir, commit, gen_html):
+        org_name, repo_name, branch, addon_dirs, addons_dir, commit, minimal, extra_fragments, gen_html):
     """ Generate README.rst from fragments.
 
     Do nothing if readme/DESCRIPTION.rst is absent, otherwise overwrite
@@ -293,12 +299,17 @@ def gen_addon_readme(
     fragments (DESCRIPTION.rst, USAGE.rst, etc) and the addon manifest.
     """
     addons = []
+    cwd = os.getcwd()
+    # if no specific addons dir is set, is defaulted all addons
+    # dir within current working dif
+    if not addon_dirs and not addons_dir:
+        addons_dir = cwd
     if addons_dir:
         addons.extend(find_addons(addons_dir))
     # if a repo_name is not provided it is defaulted
     # to the parent dir where the  command is executed
     if not repo_name:
-        repo_name = os.getcwd().split('/')[-1]
+        repo_name = cwd.split('/')[-1]
         os.system("echo 'Repo name automatically retrieve: %s'" % repo_name)
     # if branch is not provided it is automatically
     # retrived from current dir branch
@@ -316,19 +327,29 @@ def gen_addon_readme(
         os.system("echo 'Working on: %s'" % addon_name)
         addons.append((addon_name, addon_dir, manifest))
     readme_filenames = []
+    # setting fragments to be created based on received options
+    fragments = REQUIRED_FRAGMENTS
+    if extra_fragments:
+        fragments.extend(extra_fragments)
+    if not minimal:
+        fragments.extend(SUGGESTED_FRAGMENTS)
     for addon_name, addon_dir, manifest in addons:
-        description_path = os.path.join(addon_dir, FRAGMENTS_DIR)
-        description_file_path = os.path.join(description_path, 'DESCRIPTION.rst')
-        if not os.path.exists(description_file_path):
-            # if DESCRIPTION.rst does not exits it is created
-            os.makedirs(description_path)
-            os.system(
-                "touch %s && echo 'DESCRIPTION.rst not found for %s, created'"
-                % (description_file_path, addon_name)
-            )
+        addon_fragments_path = os.path.join(addon_dir, FRAGMENTS_DIR)
         readme_filename = gen_one_addon_readme(
-            org_name, repo_name, branch, addon_name, addon_dir, manifest)
+            org_name, repo_name, branch, addon_name, addon_dir, manifest, fragments)
         check_rst(readme_filename)
+        # creating fragments path if it doesn't exist
+        if not os.path.exists(addon_fragments_path):
+            os.makedirs(addon_fragments_path)
+        for fragment in fragments:
+            # validating required fragments are there, else generate them.
+            fragment_file = fragment + '.rst'
+            fragment_file_path = os.path.join(addon_fragments_path, fragment_file)
+            if not os.path.exists(fragment_file_path):
+                os.system(
+                    "touch %s && echo '%s not found for %s, created'"
+                    % (fragment_file_path, fragment_file, addon_name)
+                )
         readme_filenames.append(readme_filename)
         if gen_html:
             if not manifest.get('preloadable', True):
@@ -336,8 +357,8 @@ def gen_addon_readme(
             index_filename = gen_one_addon_index(readme_filename)
             if index_filename:
                 readme_filenames.append(index_filename)
-        if commit:
-            commit_if_needed(addon_dir, '[ADD] %s: readme added' % addon_name)
+        if not commit:
+            commit_if_needed([addon_dir], '[ADD] %s: readme added' % addon_name)
 
 
 if __name__ == '__main__':
