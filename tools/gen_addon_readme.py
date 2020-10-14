@@ -305,6 +305,8 @@ def gen_addon_readme(
     if not branch:
         branch = os.popen('git branch | grep "*"').read().replace('*', '').split('-')[0].strip()
         os.system("echo 'Branch automatically retrived: %s'" % branch)
+    # prompting addons to work with
+    os.system("echo 'Modules to work with: %s'" % addons or 0)
     for addon_dir in addon_dirs:
         addon_name = os.path.basename(os.path.abspath(addon_dir))
         try:
