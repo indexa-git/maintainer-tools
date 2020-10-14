@@ -269,7 +269,7 @@ def gen_one_addon_index(readme_filename):
               help="Organization name, eg. indexa-git")
 @click.option('--repo-name',
               help="Repository name, eg. server-tools.")
-@click.option('--branch', required=True,
+@click.option('--branch',
               help="Odoo series. eg 11.0.")
 @click.option('--addon-dir', 'addon_dirs',
               type=click.Path(dir_okay=True, file_okay=False, exists=True),
@@ -299,6 +299,12 @@ def gen_addon_readme(
     # to the parent dir where the  command is executed
     if not repo_name:
         repo_name = os.getcwd().split('/')[-1]
+        os.system("echo 'Repo name automatically retrieve: %s'" % repo_name)
+    # if branch is not provided it is automatically
+    # retrived from current dir branch
+    if not branch:
+        branch = os.popen('git branch | grep "*"').read().replace('*', '').split('-')[0].strip()
+        os.system("echo 'Branch automatically retrived: %s'" % branch)
     for addon_dir in addon_dirs:
         addon_name = os.path.basename(os.path.abspath(addon_dir))
         try:
