@@ -12,9 +12,9 @@ import click
 from docutils.core import publish_file
 from jinja2 import Template
 
-from .gitutils import commit_if_needed
-from .manifest import read_manifest, find_addons, NoManifestFound
-from .runbot_ids import get_runbot_ids
+from gitutils import commit_if_needed
+from manifest import read_manifest, find_addons, NoManifestFound
+from runbot_ids import get_runbot_ids
 
 if sys.version_info[0] < 3:
     # python 2 import
@@ -265,8 +265,8 @@ def gen_one_addon_index(readme_filename):
 
 
 @click.command()
-@click.option('--org-name', default='OCA',
-              help="Organization name, eg. OCA.")
+@click.option('--org-name', default='indexa-git',
+              help="Organization name, eg. indexa-git")
 @click.option('--repo-name', required=True,
               help="Repository name, eg. server-tools.")
 @click.option('--branch', required=True,
