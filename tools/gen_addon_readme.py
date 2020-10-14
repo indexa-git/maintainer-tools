@@ -306,19 +306,26 @@ def gen_addon_readme(
         branch = os.popen('git branch | grep "*"').read().replace('*', '').split('-')[0].strip()
         os.system("echo 'Branch automatically retrived: %s'" % branch)
     # prompting addons to work with
-    os.system("echo 'Modules to work with: %s'" % addons or 0)
     for addon_dir in addon_dirs:
         addon_name = os.path.basename(os.path.abspath(addon_dir))
         try:
             manifest = read_manifest(addon_dir)
         except NoManifestFound:
+            os.system("echo 'No manifest found, skipping: %s'" % addon_name)
             continue
+        os.system("echo 'Working on: %s'" % addon_name)
         addons.append((addon_name, addon_dir, manifest))
     readme_filenames = []
     for addon_name, addon_dir, manifest in addons:
-        if not os.path.exists(
-                os.path.join(addon_dir, FRAGMENTS_DIR, 'DESCRIPTION.rst')):
-            continue
+        description_path = os.path.join(addon_dir, FRAGMENTS_DIR)
+        description_file_path = os.path.join(description_path, 'DESCRIPTION.rst')
+        if not os.path.exists(description_file_path):
+            # if DESCRIPTION.rst does not exits it is created
+            os.makedirs(description_path)
+            os.system(
+                "touch %s && echo 'DESCRIPTION.rst not found for %s, created'"
+                % (description_file_path, addon_name)
+            )
         readme_filename = gen_one_addon_readme(
             org_name, repo_name, branch, addon_name, addon_dir, manifest)
         check_rst(readme_filename)
@@ -329,8 +336,8 @@ def gen_addon_readme(
             index_filename = gen_one_addon_index(readme_filename)
             if index_filename:
                 readme_filenames.append(index_filename)
-    if commit:
-        commit_if_needed(readme_filenames, '[UPD] README.rst')
+        if commit:
+            commit_if_needed(addon_dir, '[ADD] %s: readme added' % addon_name)
 
 
 if __name__ == '__main__':
