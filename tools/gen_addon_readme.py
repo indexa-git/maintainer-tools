@@ -315,7 +315,7 @@ def gen_addon_readme(
     # retrived from current dir branch
     if not branch:
         branch = os.popen('git branch | grep "*"').read().replace('*', '').split('-')[0].strip()
-        os.system("echo 'Branch automatically retrived: %s'" % branch)
+        os.system("echo 'Branch automatically retrieved: %s'" % branch)
     # prompting addons to work with
     for addon_dir in addon_dirs:
         addon_name = os.path.basename(os.path.abspath(addon_dir))
@@ -358,7 +358,7 @@ def gen_addon_readme(
             if index_filename:
                 readme_filenames.append(index_filename)
         if not commit:
-            commit_if_needed([addon_dir], '[ADD] %s: readme added' % addon_name)
+            commit_if_needed([addon_dir], '[REF] %s: readme added' % addon_name)
 
 
 if __name__ == '__main__':
