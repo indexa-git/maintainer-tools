@@ -344,9 +344,6 @@ def gen_addon_readme(
         fragments.extend(SUGGESTED_FRAGMENTS)
     for addon_name, addon_dir, manifest in addons:
         addon_fragments_path = os.path.join(addon_dir, FRAGMENTS_DIR)
-        readme_filename = gen_one_addon_readme(
-            org_name, repo_name, branch, addon_name, addon_dir, manifest, fragments)
-        check_rst(readme_filename)
         # creating fragments path if it doesn't exist
         if not os.path.exists(addon_fragments_path):
             os.makedirs(addon_fragments_path)
@@ -356,8 +353,17 @@ def gen_addon_readme(
             fragment_file_path = os.path.join(addon_fragments_path, fragment_file)
             if not os.path.exists(fragment_file_path):
                 os.system("touch %s" % fragment_file_path)
+                # new fragments must have demo text so they are displayed in README.rst
+                with io.open(fragment_file_path, 'w', encoding='utf8') as rf:
+                    rf.write(
+                        "This is demo content for %s fragment in module %s, replace it in file and execute command again :)"
+                        % (fragment, addon_name)
+                    )
                 if verbose:
                     os.system("echo '%s not found for %s, created'" % (fragment_file, addon_name))
+        readme_filename = gen_one_addon_readme(
+            org_name, repo_name, branch, addon_name, addon_dir, manifest, fragments)
+        check_rst(readme_filename)
         readme_filenames.append(readme_filename)
         if gen_html:
             if not manifest.get('preloadable', True):

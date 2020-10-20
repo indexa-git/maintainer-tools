@@ -40,12 +40,13 @@
 .. contents::
    :local:
 
-{{ fragment('INSTALL', 'Installation') }}
-{{- fragment('CONFIGURE', 'Configuration') }}
-{{- fragment('USAGE', 'Usage') }}
-{{- fragment('DEVELOP', 'Development') }}
-{{- fragment('ROADMAP', 'Known issues / Roadmap') -}}
-{{- fragment('HISTORY', 'Changelog') -}}
+{% for k in fragments -%}
+{{ k|replace("_", " ")|title }}
+{{ '=' * k|length }}
+
+{{ fragments.get(k, '') }}
+{% endfor %}
+
 Bug Tracker
 ===========
 
