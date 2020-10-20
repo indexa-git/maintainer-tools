@@ -340,7 +340,7 @@ def gen_addon_readme(
         if "_" in os.path.basename(addons_dir) and os.path.exists(os.path.join(addons_dir, "__manifest__.py")):
             addons_dir = os.path.dirname(addons_dir)
         if verbose:
-            click.echo(f"Addons dir automatically retrieve: {addons_dir}", fg="green")
+            click.echo(f"Addons dir automatically retrieve: {addons_dir}")
     if addons_dir:
         addons.extend(find_addons(addons_dir))
     # if a repo_name is not provided it is defaulted
@@ -348,7 +348,7 @@ def gen_addon_readme(
     if not repo_name:
         repo_name = os.path.basename(addons_dir)
         if verbose:
-            click.echo(f"Repo name automatically retrieve: {repo_name}", fg="green")
+            click.echo(f"Repo name automatically retrieve: {repo_name}")
     # if branch is not provided it is automatically
     # retrived from current dir branch
     if not branch:
@@ -362,7 +362,7 @@ def gen_addon_readme(
             manifest = read_manifest(addon_dir)
         except NoManifestFound:
             if verbose:
-                click.echo(f"No manifest found, skipping: {addon_name}", fg="orange")
+                click.echo(f"No manifest found, skipping: {addon_name}")
             continue
         if verbose:
             click.echo(f"Working on: {addon_name}")
