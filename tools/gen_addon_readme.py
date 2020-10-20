@@ -299,22 +299,25 @@ def gen_addon_readme(
     fragments (DESCRIPTION.rst, USAGE.rst, etc) and the addon manifest.
     """
     addons = []
-    cwd = os.getcwd()
     # if no specific addons dir is set, is defaulted all addons
     # dir within current working dif
     if not addon_dirs and not addons_dir:
-        addons_dir = cwd
+        addons_dir = os.getcwd()
+        # if the command is executed from within a module it must take the parent dir
+        if "_" in os.path.basename(addons_dir) and os.path.exists(os.path.join(addons_dir, "__manifest__.py")):
+            addons_dir = os.path.dirname(addons_dir)
+        os.system("echo 'Addons Dir automatically retrieve: %s'" % addons_dir)
     if addons_dir:
         addons.extend(find_addons(addons_dir))
     # if a repo_name is not provided it is defaulted
     # to the parent dir where the  command is executed
     if not repo_name:
-        repo_name = cwd.split('/')[-1]
+        repo_name = os.path.base_name(addons_dir)
         os.system("echo 'Repo name automatically retrieve: %s'" % repo_name)
     # if branch is not provided it is automatically
     # retrived from current dir branch
     if not branch:
-        branch = os.popen('git branch | grep "*"').read().replace('*', '').split('-')[0].strip()
+        branch = os.popen('git -C %s branch --show-current' % addons_dir).read().split('-')[0]
         os.system("echo 'Branch automatically retrieved: %s'" % branch)
     # prompting addons to work with
     for addon_dir in addon_dirs:
