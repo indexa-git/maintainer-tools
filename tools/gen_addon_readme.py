@@ -139,6 +139,30 @@ def make_repo_badge(org_name, repo_name, branch, addon_name):
     )
 
 
+def make_test_badge(org_name, repo_name):
+    return (
+        f'https://github.com/{org_name}/{repo_name}/workflows/Unit%20Tests/badge.svg',
+        f'https://github.com/{org_name}/{repo_name}/workflows/Unit%20Tests/badge.svg',
+        'Unit Tests',
+    )
+
+
+def make_linting_badge(org_name, repo_name):
+    return (
+        f'https://github.com/{org_name}/{repo_name}/workflows/Linting/badge.svg',
+        f'https://github.com/{org_name}/{repo_name}/workflows/Linting/badge.svg',
+        'Linting',
+    )
+
+
+def make_codecov_badge(org_name, repo_name, branch):
+    return (
+        f'https://codecov.io/gh/{org_name}/{repo_name}/{branch}/%s/graph/badge.svg',
+        f'https://codecov.io/gh/{org_name}/{repo_name}',
+        'CodeCov',
+    )
+
+
 def generate_fragment(org_name, repo_name, branch, addon_name, file):
     fragment_lines = file.readlines()
     if not fragment_lines:
@@ -202,6 +226,12 @@ def gen_one_addon_readme(
         badges.append(make_runbot_badge(runbot_id, branch))
     elif org_name == 'OCA':
         print("Warning: There isn't a runbot_id for this repo: %s" % repo_name)
+    # generating test badgets
+    badges.extend([
+        make_test_badge(org_name, repo_name),
+        make_linting_badge(org_name, repo_name),
+        make_codecov_badge(org_name, repo_name, branch),
+    ])
     authors = [
         a.strip()
         for a in manifest.get('author', '').split(',')
