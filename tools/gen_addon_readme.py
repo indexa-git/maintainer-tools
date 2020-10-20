@@ -284,10 +284,12 @@ def gen_one_addon_index(readme_filename):
               help="git commit changes to README.rst, if any.")
 @click.option('--minimal/--all-fragments',
               help="Create all recomended fragments.")
-@click.option('--extra-fragments', 'extra_fragments',
+@click.option('--extra-fragments',
               type=str,
-              multiple=True,
+              nargs=0,
               help="Extra fragments to be included and created.")
+@click.argument('extra-fragments',
+                nargs=-1)
 @click.option('--gen-html/--no-gen-html', default=True,
               help="Generate index html file.")
 @click.option('--verbose', is_flag=True, help='verbose.')
