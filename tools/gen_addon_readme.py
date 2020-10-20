@@ -12,9 +12,9 @@ import click
 from docutils.core import publish_file
 from jinja2 import Template
 
-from gitutils import commit_if_needed
-from manifest import read_manifest, find_addons, NoManifestFound
-from runbot_ids import get_runbot_ids
+from .gitutils import commit_if_needed
+from .manifest import read_manifest, find_addons, NoManifestFound
+from .runbot_ids import get_runbot_ids
 
 if sys.version_info[0] < 3:
     # python 2 import
