@@ -290,8 +290,9 @@ def gen_one_addon_index(readme_filename):
               help="Extra fragments to be included and created.")
 @click.option('--gen-html/--no-gen-html', default=True,
               help="Generate index html file.")
+@click.option('--verbose', is_flag=True, help='verbose.')
 def gen_addon_readme(
-        org_name, repo_name, branch, addon_dirs, addons_dir, commit, minimal, extra_fragments, gen_html):
+        org_name, repo_name, branch, addon_dirs, addons_dir, commit, minimal, extra_fragments, gen_html, verbose):
     """ Generate README.rst from fragments.
 
     Do nothing if readme/DESCRIPTION.rst is absent, otherwise overwrite
@@ -306,28 +307,33 @@ def gen_addon_readme(
         # if the command is executed from within a module it must take the parent dir
         if "_" in os.path.basename(addons_dir) and os.path.exists(os.path.join(addons_dir, "__manifest__.py")):
             addons_dir = os.path.dirname(addons_dir)
-        os.system("echo 'Addons Dir automatically retrieve: %s'" % addons_dir)
+        if verbose:
+            os.system("echo 'Addons Dir automatically retrieve: %s'" % addons_dir)
     if addons_dir:
         addons.extend(find_addons(addons_dir))
     # if a repo_name is not provided it is defaulted
     # to the parent dir where the  command is executed
     if not repo_name:
-        repo_name = os.path.base_name(addons_dir)
-        os.system("echo 'Repo name automatically retrieve: %s'" % repo_name)
+        repo_name = os.path.basename(addons_dir)
+        if verbose:
+            os.system("echo 'Repo name automatically retrieve: %s'" % repo_name)
     # if branch is not provided it is automatically
     # retrived from current dir branch
     if not branch:
         branch = os.popen('git -C %s branch --show-current' % addons_dir).read().split('-')[0]
-        os.system("echo 'Branch automatically retrieved: %s'" % branch)
+        if verbose:
+            os.system("echo 'Branch automatically retrieved: %s'" % branch)
     # prompting addons to work with
     for addon_dir in addon_dirs:
         addon_name = os.path.basename(os.path.abspath(addon_dir))
         try:
             manifest = read_manifest(addon_dir)
         except NoManifestFound:
-            os.system("echo 'No manifest found, skipping: %s'" % addon_name)
+            if verbose:
+                os.system("echo 'No manifest found, skipping: %s'" % addon_name)
             continue
-        os.system("echo 'Working on: %s'" % addon_name)
+        if verbose:
+            os.system("echo 'Working on: %s'" % addon_name)
         addons.append((addon_name, addon_dir, manifest))
     readme_filenames = []
     # setting fragments to be created based on received options
@@ -349,10 +355,9 @@ def gen_addon_readme(
             fragment_file = fragment + '.rst'
             fragment_file_path = os.path.join(addon_fragments_path, fragment_file)
             if not os.path.exists(fragment_file_path):
-                os.system(
-                    "touch %s && echo '%s not found for %s, created'"
-                    % (fragment_file_path, fragment_file, addon_name)
-                )
+                os.system("touch %s" % fragment_file_path)
+                if verbose:
+                    os.system("echo '%s not found for %s, created'" % (fragment_file, addon_name))
         readme_filenames.append(readme_filename)
         if gen_html:
             if not manifest.get('preloadable', True):
@@ -361,7 +366,7 @@ def gen_addon_readme(
             if index_filename:
                 readme_filenames.append(index_filename)
         if not commit:
-            commit_if_needed([addon_dir], '[REF] %s: readme added' % addon_name)
+            commit_if_needed([addon_dir], '[REF] %s: readme added' % addon_name, quiet=not verbose)
 
 
 if __name__ == '__main__':
