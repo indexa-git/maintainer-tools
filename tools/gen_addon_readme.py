@@ -347,6 +347,10 @@ def gen_addon_readme(
         # creating fragments path if it doesn't exist
         if not os.path.exists(addon_fragments_path):
             os.makedirs(addon_fragments_path)
+        # if fragments already exits they are appended to the list in order to be updated
+        # when command is executed again
+        existing_fragments = [os.path.splitext(f)[0] for f in os.listdir(addon_fragments_path)]
+        fragments = list(set(fragments + existing_fragments))
         for fragment in fragments:
             # validating required fragments are there, else generate them.
             fragment_file = fragment + '.rst'
