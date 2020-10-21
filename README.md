@@ -103,16 +103,126 @@ To provide high quality README for our modules we generate them automatically.
 The sections of the final README are organized in fragments.
 They must be put inside a `readme` folder respecting [this structure|./readme].
 
-eg.
-To generate the final README for the module `auth_keycloak`:
+#### Run and relax
 
-    $ oca-gen-addon-readme --repo-name=server-auth --branch=10.0 --addon-dir=auth_keycloak
+You should be able to generate `README.rst` files for all modules within a repository 
+by simply typing inside that repo dir.
 
-The result will be a fully PyPI compliant README.rst in the root of your module.
+    $ oca-gen-addon-readme
+    
+#### Organization Name
 
-You may also use this script for your own repositories by specifying this
-additional argument `--org-name=myorganisation`
+The organization name is provided in [--org-name]. It is used to generate the final URL
+to the repository. By default it takes `indexa-git`.
 
+    $ oca-gen-addon-readme --org-name iterativo-git
+    
+#### Repository Name
+
+The repository name is provided in [--repo-name]. It is used to generate the final URL
+to the repository. By default it takes the name of the working addons directory.
+
+    $ oca-gen-addon-readme --repo-name dominican-bank-statement
+ 
+- If you execute the command inside a repository directory it will take that dir name as
+repository name.
+
+- If you execute the command inside a module directory it will take the parent dir name as
+repository name.
+    
+#### Branch
+
+The branch is provided in [--branch]. It is used to generate the final URL to the repository.
+By default it takes the current branch of the addons directory. Meaning it will execute 
+[git branch -C <addons dir> --show current] in the dir it is working on.
+
+    $ oca-gen-addon-readme --branch 12.0
+    
+#### Addon Directory
+
+The addon directory is provided in [--addon-dir]. Use this option if you only want to generate
+`README.rst` for that module.
+
+    $ oca-gen-addon-readme --addon-dir acap_bank_statement_import
+    
+Or if you are inside a module
+
+    $ oca-gen-addon-readme --addon-dir .
+    
+You can also use absolute paths
+
+    $ oca-gen-addon-readme --addon-dir /Users/cadara/PycharmProjects/indexa/dominican-bank-statement/acap_bank_statement_import
+
+#### Addons Directory
+
+The addons directory is provided in [--addons-dir]. Use this option if you want to generate
+`README.rst`for all modules within a directory.
+
+    $ oca-gen-addon-readme --addons-dir dominican-bank-statement
+
+- If you are inside a repository directory it will take the current working directory by default.
+
+- If you are inside a module directory it will take the parent directory by default.
+    
+You can also use absolute paths
+
+    $ oca-gen-addon-readme --addons-dir /Users/cadara/PycharmProjects/indexa/dominican-bank-statement
+    
+#### Committing
+
+The committing options are provided in [--commit/--no-commit]. Use [--commit] if you want all changes 
+for each module to be automatically commited. Use [--no-commit] if you want all changes to be left unstaged.
+By default it takes [--commit].
+
+    $ oca-gen-addon-readme --commit
+    
+or
+
+    $ oca-gen-addon-readme --no-commit
+    
+#### Minimal Documentation
+
+The minimal documentation options are provided in [--minimal/--all-fragments]. Use [--minimal] if you
+only want to generate a `README.rst` file with required fragments. Use [--all-fragments] if you want
+to generate `README.rst`with all recommended fragments.
+
+    $ oca-gen-addon-readme --all-fragments
+    
+or
+
+    $ oca-gen-addon-readme --minimal
+
+- Required fragments
+    
+    DESCRIPTION
+    
+- Recommended fragments
+
+    CONFIGURE
+    USAGE
+    CONTRIBUTORS
+    CREDITS
+    
+#### Extra Fragments
+
+Extra fragments are provided in [--extra-fragments] option. Use this option if you
+want to add additional fragments to the `README.rst` and automatically create the files.
+
+    $ oca-gen-addon-readme --extra-fragments fragment1 extra_fragment_2
+    
+The fragment headers will be taken from the `FRAGMENT_EXAMPLE.rst` file. Replacing
+Underscore `_` with blank space and styling as a title.
+
+    - fragment1 --> Fragment1
+    - extra_fragment_2 --> Extra Fragment 2
+    
+#### Verbose
+
+Verbose is provided in [--verbose] option. Use this option if you want information of
+the command execution to be prompted to shell. This also triggers the [--quiet] option
+when committing. By default it's false.
+
+    $ oca-gen-addon-readme --verbose
 
 ### Changelog generator using towncrier
 
