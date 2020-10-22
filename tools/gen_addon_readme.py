@@ -154,14 +154,6 @@ def make_linting_badge(org_name, repo_name):
     )
 
 
-def make_codecov_badge(org_name, repo_name, branch):
-    return (
-        f'https://codecov.io/gh/{org_name}/{repo_name}/{branch}/%s/graph/badge.svg',
-        f'https://codecov.io/gh/{org_name}/{repo_name}',
-        'CodeCov',
-    )
-
-
 def generate_fragment(org_name, repo_name, branch, addon_name, file):
     fragment_lines = file.readlines()
     if not fragment_lines:
@@ -229,7 +221,6 @@ def gen_one_addon_readme(
     badges.extend([
         make_test_badge(org_name, repo_name),
         make_linting_badge(org_name, repo_name),
-        make_codecov_badge(org_name, repo_name, branch),
     ])
     authors = [
         a.strip()
@@ -310,9 +301,11 @@ def gen_one_addon_index(readme_filename):
               help="Directory containing several addons, the README will be "
                    "generated for all installable addons found there.")
 @click.option('--commit/--no-commit',
-              help="git commit changes to README.rst, if any.")
+              help="git commit changes to README.rst, if any.",
+              default=True)
 @click.option('--minimal/--all-fragments',
-              help="Create all recomended fragments.")
+              help="Create all recomended fragments.",
+              default=False)
 @click.option('--extra-fragments',
               type=str,
               nargs=0,
@@ -331,17 +324,33 @@ def gen_addon_readme(
     fragments (DESCRIPTION.rst, USAGE.rst, etc) and the addon manifest.
     """
     addons = []
+    cwd = os.getcwd()
+    if addons_dir:
+        addons.extend(find_addons(addons_dir))
     # if no specific addons dir is set, is defaulted all addons
     # dir within current working dif
     if not addon_dirs and not addons_dir:
-        addons_dir = os.getcwd()
-        # if the command is executed from within a module it must take the parent dir
-        if "_" in os.path.basename(addons_dir) and os.path.exists(os.path.join(addons_dir, "__manifest__.py")):
-            addons_dir = os.path.dirname(addons_dir)
+        # if the command is executed from a repo dir it takes current
+        # dir as addons_dir and finds all the addons
+        if not os.path.exists(os.path.join(cwd, "__manifest__.py")):
+            addons_dir = cwd
+            addons.extend(find_addons(addons_dir))
+        # if it's executed from within a module
+        # the addon dir is the current module and addons dir
+        # is the parent directory
+        # addons_dir is required in orther to retrieved other data below
+        else:
+            addon_dirs = [cwd]
+            addons_dir = os.path.dirname(cwd)
         if verbose:
             click.echo(f"Addons dir automatically retrieve: {addons_dir}")
-    if addons_dir:
-        addons.extend(find_addons(addons_dir))
+            click.echo(f"Addon dirs automatically retrieve: {addon_dirs}")
+    # if you provide a addon_dir it should retrieve addons dir as well
+    # to get further information bellow
+    if addon_dirs and not addons_dir:
+        addons_dir = os.path.dirname(os.path.abspath(addon_dirs[0]))
+        if verbose:
+            click.echo(f"Addons dir automatically retrieve: {addons_dir}")
     # if a repo_name is not provided it is defaulted
     # to the parent dir where the  command is executed
     if not repo_name:
@@ -351,7 +360,7 @@ def gen_addon_readme(
     # if branch is not provided it is automatically
     # retrived from current dir branch
     if not branch:
-        branch = os.popen('git -C %s branch --show-current' % addons_dir).read().split('-')[0]
+        branch = os.popen(f"git -C {addons_dir} branch --show-current").read().split('-')[0]
         if verbose:
             click.echo(f"Branch automatically retrieved: {branch}")
     # prompting addons to work with
@@ -406,8 +415,13 @@ def gen_addon_readme(
             index_filename = gen_one_addon_index(readme_filename)
             if index_filename:
                 readme_filenames.append(index_filename)
-        if not commit:
-            commit_if_needed([addon_dir], f'[REF] {addon_name}: readme updated.', quiet=not verbose)
+        if commit:
+            # as git requires to be in the working repository to work
+            # we first change to that dir, execute then go back to the
+            # previews directory from where the command was called :v
+            if cwd != addons_dir:
+                os.chdir(addons_dir)
+            commit_if_needed([addon_name], f'[REF] {addon_name}: readme updated.', quiet=not verbose)
 
 
 if __name__ == '__main__':
