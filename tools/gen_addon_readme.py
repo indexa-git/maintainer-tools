@@ -360,7 +360,7 @@ def gen_addon_readme(
     # if branch is not provided it is automatically
     # retrived from current dir branch
     if not branch:
-        branch = os.popen(f"git -C {addons_dir} branch --show-current").read().split('-')[0]
+        branch = os.popen(f"git --git-dir={addons_dir}/.git branch | grep '*'").read().replace('*', '').split('-')[0].strip()
         if verbose:
             click.echo(f"Branch automatically retrieved: {branch}")
     # prompting addons to work with
